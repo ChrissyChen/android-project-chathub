@@ -5,8 +5,10 @@ ChatHub is a multi-user chat app, which is implemented for the Android platform.
 This is an individual project that makes enhancements to ChatHub. 
 
 Enhancements include:
-Photo Message: use a phone camera to take photo messages
-Voice Message: send recorded voice messages
-Message Search: search related messages based on a keyword
+<ul>
+  <li>Photo Message: use a phone camera to take photo message</li>
+  <li>Voice Message: send recorded voice messages</li>
+  <li>Message Search: search related messages based on a keyword</li>
+</ul>
 
 Author: Xinlu Chen
