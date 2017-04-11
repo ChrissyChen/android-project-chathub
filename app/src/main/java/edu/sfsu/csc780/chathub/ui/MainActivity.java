@@ -23,6 +23,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity
     public static final int MSG_LENGTH_LIMIT = 10;
     public static final String ANONYMOUS = "anonymous";
     private static final int REQUEST_PICK_IMAGE = 1;
+    private static final int REQUEST_TAKE_PHOTO = 2;
     private String mUsername;
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
@@ -93,6 +95,7 @@ public class MainActivity extends AppCompatActivity
             mFirebaseAdapter;
     private ImageButton mImageButton;
     private ImageButton mLocationButton;
+    private ImageButton mCameraButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,7 +163,6 @@ public class MainActivity extends AppCompatActivity
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Send messages on click.
                 //Send messages on click.
                 mMessageRecyclerView.scrollToPosition(0);
                 ChatMessage chatMessage = new
@@ -185,6 +187,14 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 loadMap();
+            }
+        });
+
+        mCameraButton = (ImageButton) findViewById(R.id.cameraButton);
+        mCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePhoto();
             }
         });
     }
@@ -294,6 +304,11 @@ public class MainActivity extends AppCompatActivity
         loader.forceLoad();
     }
 
+    private void takePhoto() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, REQUEST_TAKE_PHOTO);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[],
@@ -326,10 +341,20 @@ public class MainActivity extends AppCompatActivity
                 if (bitmap != resizedBitmap) {
                     uri = savePhotoImage(this, resizedBitmap);
                 }
-
                 createImageMessage(uri);
             } else {
                 Log.e(TAG, "Cannot get image for uploading");
+            }
+        }
+
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
+            if (data != null) {
+                Bundle extras = data.getExtras();
+                Bitmap bitmap = (Bitmap) extras.get("data");
+                Uri uri = savePhotoImage(this, bitmap);
+                createImageMessage(uri);
+            } else {
+                Log.e(TAG, "Cannot take a photo");
             }
         }
     }
