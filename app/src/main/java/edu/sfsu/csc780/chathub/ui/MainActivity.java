@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity
     private ImageButton mImageButton;
     private ImageButton mLocationButton;
     private ImageButton mCameraButton;
+    private ImageButton mVoiceButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,12 +108,14 @@ public class MainActivity extends AppCompatActivity
         //Initialize Auth
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
+        //Log.d("mUser", String.valueOf(mUser));
         if (mUser == null) {
             startActivity(new Intent(this, SignInActivity.class));
             finish();
             return;
         } else {
             mUsername = mUser.getDisplayName();
+            //Log.d(TAG, mUsername);
             if (mUser.getPhotoUrl() != null) {
                 mPhotoUrl = mUser.getPhotoUrl().toString();
             }
@@ -195,6 +198,14 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 takePhoto();
+            }
+        });
+
+        mVoiceButton = (ImageButton) findViewById(R.id.voiceButton);
+        mVoiceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                recordVoice();
             }
         });
     }
@@ -307,6 +318,10 @@ public class MainActivity extends AppCompatActivity
     private void takePhoto() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, REQUEST_TAKE_PHOTO);
+    }
+
+    private void recordVoice() {
+
     }
 
     @Override

@@ -21,7 +21,7 @@ public class LocationUtils {
     private static String COARSE_LOCATION = android.Manifest.permission.ACCESS_COARSE_LOCATION;
     private static int GRANTED = PackageManager.PERMISSION_GRANTED;
     public static final int REQUEST_CODE = 100;
-    private static final int MIN_TIME = 1;
+    private static final int MIN_TIME = 60000;
     private static final int MIN_DISTANCE = 10;
     private static final String[] LOCATION_PERMISSIONS =
             {FINE_LOCATION, COARSE_LOCATION};
