@@ -124,7 +124,13 @@ public class MessageUtil {
                                 viewHolder.messageTextView.setText("Error loading image");
                                 Log.e(LOG_TAG, e.getMessage() + " : " + chatMessage.getImageUrl());
                             }
-                        } else {
+                        }
+//                        else if () {
+//
+//                            //voice message
+//
+//                        }
+                        else {
                             //Set view visibilities for a text message
                             viewHolder.messageImageView.setVisibility(View.GONE);
                             viewHolder.messageTextView.setVisibility(View.VISIBLE);
