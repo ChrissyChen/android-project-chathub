@@ -20,8 +20,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -54,6 +56,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
+import java.io.IOException;
 
 import edu.sfsu.csc780.chathub.ImageUtil;
 import edu.sfsu.csc780.chathub.LocationUtils;
@@ -97,6 +102,8 @@ public class MainActivity extends AppCompatActivity
     private ImageButton mLocationButton;
     private ImageButton mCameraButton;
     private ImageButton mVoiceButton;
+    private boolean isStart = false;
+    private MediaRecorder mMediaRecorder = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -321,7 +328,52 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void recordVoice() {
+        if(!isStart){
+            startRecord();
+            //mVoiceButton.setText("Stop Record");
+            isStart = true;
+        }else{
+            stopRecord();
+            //btn_control.setText("Start Record");
+            isStart = false;
+        }
+    }
 
+    private void startRecord(){
+        if(mMediaRecorder == null){
+            File dir = new File(Environment.getExternalStorageDirectory(),"VoiceMessages");
+            if(!dir.exists()){
+                dir.mkdirs();
+            }
+            File soundFile = new File(dir,System.currentTimeMillis()+".amr");
+            if(!soundFile.exists()){
+                try {
+                    soundFile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "Can't create voice recording file");
+                }
+            }
+            mMediaRecorder = new MediaRecorder();
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);  //set Microphone audio source
+            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_WB);   //set the output as a AMR WB file format
+            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);   //set the AMR (Wideband) audio codec
+            mMediaRecorder.setOutputFile(soundFile.getAbsolutePath());
+            try {
+                mMediaRecorder.prepare();
+                mMediaRecorder.start();  //start recording
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void stopRecord(){
+        if(mMediaRecorder != null){
+            mMediaRecorder.stop();
+            mMediaRecorder.release();
+            mMediaRecorder = null;
+        }
     }
 
     @Override
