@@ -31,8 +31,8 @@ public class CameraUtil {
             ActivityCompat.requestPermissions(activity, CAMERA_PERMISSIONS, REQUEST_CODE);
         } else {
             Log.d(LOG_TAG, "the app has read and write permission. in CameraUtil startCamera()");
-            MainActivity ma = new MainActivity();
-            ma.takePhoto();
+            MainActivity mMainActivity = (MainActivity)activity;
+            mMainActivity.takePhoto();
         }
 
     }
