@@ -50,49 +50,44 @@ public class LocationUtils {
                             + " lon: " + location.getLongitude());
                     sLocation = location;
                 }
-
-                public void onStatusChanged(String provider, int status, Bundle
-                        extras) {
-                }
-
-                public void onProviderEnabled(String provider) {
-                }
-
-                public void onProviderDisabled(String provider) {
-                }
+                public void onStatusChanged(String provider, int status, Bundle extras) {}
+                public void onProviderEnabled(String provider) {}
+                public void onProviderDisabled(String provider) {}
             };
         }
 
         if (!checkLocationPermission(activity)) {
             return;
+        } else {
+            Log.d(LOG_TAG, "CLASS locationUtils  startLocationUpdate()");
+            Log.d(LOG_TAG, "requesting updates");
+            Location location =
+                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location != null) {
+                Log.d(LOG_TAG, "last known lat: " + location.getLatitude()
+                        + " lon: " + location.getLongitude());
+                sLocation = location;
+            }
+            Log.d(LOG_TAG, "requesting updates");
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME,
+                    MIN_DISTANCE, sLocationListener);
+
+//            MainActivity mMainActivity = (MainActivity)activity;
+//            mMainActivity.loadMap();
         }
-
-
-        Log.d(LOG_TAG, "CLASS locationUtils  startLocationUpdate()");
-        Log.d(LOG_TAG, "requesting updates");
-        Location location =
-                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (location != null) {
-            Log.d(LOG_TAG, "last known lat: " + location.getLatitude()
-                    + " lon: " + location.getLongitude());
-            sLocation = location;
-        }
-        Log.d(LOG_TAG, "requesting updates");
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME,
-                MIN_DISTANCE, sLocationListener);
-
-//        MainActivity ma = new MainActivity();
-//        ma.loadMap();
     }
 
-    public static boolean checkLocationPermission(Activity activity) {
+    //checks if the app has permission to Geo location, and requests the permission if necessary
+    private static boolean checkLocationPermission(Activity activity) {
+        boolean isPermitted = false;
         if (ActivityCompat.checkSelfPermission(activity, FINE_LOCATION) !=
                 GRANTED && ActivityCompat.checkSelfPermission(activity,
                 COARSE_LOCATION) != GRANTED) {
             Log.d(LOG_TAG, "requesting permissions for starting");
             ActivityCompat.requestPermissions(activity, LOCATION_PERMISSIONS, REQUEST_CODE);
-            return false;
+        } else {
+            isPermitted = true;
         }
-        return true;
+        return isPermitted;
     }
 }

@@ -333,20 +333,22 @@ public class MainActivity extends AppCompatActivity
                     Log.d(TAG, "onRequestPermissionsResult startLocationUpdates!!!!!!!!!!!!!!!!");
 //                    loadMap();
 //                    Log.d(TAG, "onRequestPermissionsResult loadMap +++++++++++++++");
+                } else {
+//                    mLocationButton.setEnabled(false);
+//                    Log.d(TAG, "onRequestPermissionsResult disenable the location button +++++++++++++++");
+//                    mLocationButton.setAlpha((float) 0.5);
                 }
                 break;
             }
 
             case CAMERA_PERMISSION: {
                 if (isGranted) {
-//                    CameraUtil.startCamera(this);
-//                    Log.d(TAG, "onRequestPermissionsResult startcamera~~~~~~~~~~");
                     takePhoto();
                     Log.d(TAG, "onRequestPermissionsResult takePhoto ___________________");
                 } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                    mCameraButton.setEnabled(false);
+                    Log.d(TAG, "onRequestPermissionsResult disenable the camera button +++++++++++++++");
+                    mCameraButton.setAlpha((float) 0.2);
                 }
                 break;
             }
