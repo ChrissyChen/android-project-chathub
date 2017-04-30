@@ -60,6 +60,7 @@ import com.google.firebase.storage.UploadTask;
 import java.io.File;
 import java.io.IOException;
 
+import edu.sfsu.csc780.chathub.CameraUtil;
 import edu.sfsu.csc780.chathub.ImageUtil;
 import edu.sfsu.csc780.chathub.LocationUtils;
 import edu.sfsu.csc780.chathub.MapLoader;
@@ -68,6 +69,7 @@ import edu.sfsu.csc780.chathub.R;
 import edu.sfsu.csc780.chathub.model.ChatMessage;
 import edu.sfsu.csc780.chathub.ui.SignInActivity;
 
+import static edu.sfsu.csc780.chathub.ImageUtil.saveImageToAlbum;
 import static edu.sfsu.csc780.chathub.ImageUtil.savePhotoImage;
 import static edu.sfsu.csc780.chathub.ImageUtil.scaleImage;
 
@@ -75,12 +77,12 @@ public class MainActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener, MessageUtil.MessageLoadListener {
 
     private static final String TAG = "MainActivity";
-    public static final String MESSAGES_CHILD = "messages";
-    private static final int REQUEST_INVITE = 1;
     public static final int MSG_LENGTH_LIMIT = 10;
     public static final String ANONYMOUS = "anonymous";
     private static final int REQUEST_PICK_IMAGE = 1;
     private static final int REQUEST_TAKE_PHOTO = 2;
+    private static final int LOCATION_PERMISSION = LocationUtils.REQUEST_CODE;
+    private static final int CAMERA_PERMISSION = CameraUtil.REQUEST_CODE;
     private String mUsername;
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
@@ -174,7 +176,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 //Send messages on click.
-                mMessageRecyclerView.scrollToPosition(0);
                 ChatMessage chatMessage = new
                         ChatMessage(mMessageEditText.getText().toString(),
                         mUsername,
@@ -189,6 +190,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 pickImage();
+                Log.d(TAG, "onClick pickImage ==============");
             }
         });
 
@@ -196,7 +198,12 @@ public class MainActivity extends AppCompatActivity
         mLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //LocationUtils.checkLocationPermission(MainActivity.this);
+                //Log.d(TAG, "onClick checkLocationPermission!!!!!!!!!!!!!!!!");
+//                LocationUtils.startLocationUpdates(MainActivity.this);
+//                Log.d(TAG, "onClick startLocationUpdates!!!!!!!!!!!!!!!!");
                 loadMap();
+
             }
         });
 
@@ -204,7 +211,9 @@ public class MainActivity extends AppCompatActivity
         mCameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePhoto();
+                CameraUtil.startCamera(MainActivity.this);
+                Log.d(TAG, "onClick startcamera~~~~~~~~~~");
+
             }
         });
 
@@ -289,7 +298,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private void loadMap() {
+    public void loadMap() {
         Loader<Bitmap> loader = getSupportLoaderManager().initLoader(0, null,
                 new LoaderManager.LoaderCallbacks<Bitmap>() {
                     @Override
@@ -322,7 +331,7 @@ public class MainActivity extends AppCompatActivity
         loader.forceLoad();
     }
 
-    private void takePhoto() {
+    public void takePhoto() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, REQUEST_TAKE_PHOTO);
     }
@@ -380,10 +389,36 @@ public class MainActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[],
                                            int[] grantResults) {
+        // If request is cancelled, the result arrays are empty.
         boolean isGranted = (grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
-        if (isGranted && requestCode == LocationUtils.REQUEST_CODE) {
-            LocationUtils.startLocationUpdates(this);
+
+        switch (requestCode) {
+            case LOCATION_PERMISSION: {
+                if (isGranted) {
+                    LocationUtils.startLocationUpdates(this);
+                    Log.d(TAG, "onRequestPermissionsResult startLocationUpdates!!!!!!!!!!!!!!!!");
+//                    loadMap();
+//                    Log.d(TAG, "onRequestPermissionsResult loadMap +++++++++++++++");
+                } else {
+//                    mLocationButton.setEnabled(false);
+//                    Log.d(TAG, "onRequestPermissionsResult disenable the location button +++++++++++++++");
+//                    mLocationButton.setAlpha((float) 0.5);
+                }
+                break;
+            }
+
+            case CAMERA_PERMISSION: {
+                if (isGranted) {
+                    takePhoto();
+                    Log.d(TAG, "onRequestPermissionsResult takePhoto ___________________");
+                } else {
+                    mCameraButton.setEnabled(false);
+                    Log.d(TAG, "onRequestPermissionsResult disenable the camera button +++++++++++++++");
+                    mCameraButton.setAlpha((float) 0.2);
+                }
+                break;
+            }
         }
     }
 
@@ -420,6 +455,7 @@ public class MainActivity extends AppCompatActivity
                 Bitmap bitmap = (Bitmap) extras.get("data");
                 Uri uri = savePhotoImage(this, bitmap);
                 createImageMessage(uri);
+                saveImageToAlbum(this);
             } else {
                 Log.e(TAG, "Cannot take a photo");
             }

@@ -1,6 +1,7 @@
 package edu.sfsu.csc780.chathub;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
@@ -23,6 +24,11 @@ public class ImageUtil {
     public static final double MAX_LINEAR_DIMENSION = 500.0;
     public static final String IMAGE_FILE_NAME_PREFIX = "chathub-";
     private static final String TAG = ImageUtil.class.getSimpleName();
+    private static File imageFile;
+
+//    public static File getImageFile () {
+//        return imageFile;
+//    }
 
     public static Bitmap scaleImage(Bitmap bitmap) {
         int originalHeight = bitmap.getHeight();
@@ -68,8 +74,10 @@ public class ImageUtil {
         String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         String imageFileNamePrefix = IMAGE_FILE_NAME_PREFIX + timeStamp;
         File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+//        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+//        Log.d(TAG, "file://" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString());
 
-        File imageFile = File.createTempFile(
+        imageFile = File.createTempFile(
                 imageFileNamePrefix,    /* prefix */
                 ".jpg",                 /* suffix */
                 storageDir              /* directory */
@@ -85,5 +93,26 @@ public class ImageUtil {
             e.printStackTrace();
         }
         return bitmap;
+    }
+
+    public static void saveImageToAlbum(Context context) {
+
+        // insert image file to album
+        try {
+            MediaStore.Images.Media.insertImage(context.getContentResolver(),
+                    imageFile.getAbsolutePath(), imageFile.getName(), null);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.d(TAG, "Image file cannot found in saveImageToAlbum().");
+        }
+
+//        Log.d(TAG, "file://" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString());
+//        Log.d(TAG, "file://" + context.getExternalFilesDir(Environment.DIRECTORY_DCIM).toString());
+//        Log.d(TAG, "file://" + context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString());
+
+        //broadcast the updates to the album
+        context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString())));
+        context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + context.getExternalFilesDir(Environment.DIRECTORY_DCIM).toString())));
+
     }
 }

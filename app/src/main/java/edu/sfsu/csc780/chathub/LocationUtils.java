@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
+import edu.sfsu.csc780.chathub.ui.MainActivity;
+
 /**
  * Created by Xinlu Chen on 4/2/17.
  */
@@ -21,7 +23,7 @@ public class LocationUtils {
     private static String COARSE_LOCATION = android.Manifest.permission.ACCESS_COARSE_LOCATION;
     private static int GRANTED = PackageManager.PERMISSION_GRANTED;
     public static final int REQUEST_CODE = 100;
-    private static final int MIN_TIME = 60000;
+    private static final int MIN_TIME = 6000;
     private static final int MIN_DISTANCE = 10;
     private static final String[] LOCATION_PERMISSIONS =
             {FINE_LOCATION, COARSE_LOCATION};
@@ -44,39 +46,48 @@ public class LocationUtils {
             // Define a listener that responds to location updates
             sLocationListener = new LocationListener() {
                 public void onLocationChanged(Location location) {
-                    Log.d(LOG_TAG, "lat: " + location.getLatitude()
+                    Log.d(LOG_TAG, "Location changed! lat: " + location.getLatitude()
                             + " lon: " + location.getLongitude());
                     sLocation = location;
                 }
-
-                public void onStatusChanged(String provider, int status, Bundle
-                        extras) {
-                }
-
-                public void onProviderEnabled(String provider) {
-                }
-
-                public void onProviderDisabled(String provider) {
-                }
+                public void onStatusChanged(String provider, int status, Bundle extras) {}
+                public void onProviderEnabled(String provider) {}
+                public void onProviderDisabled(String provider) {}
             };
         }
+
+        if (!checkLocationPermission(activity)) {
+            return;
+        } else {
+            Log.d(LOG_TAG, "CLASS locationUtils  startLocationUpdate()");
+            Log.d(LOG_TAG, "requesting updates");
+            Location location =
+                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location != null) {
+                Log.d(LOG_TAG, "last known lat: " + location.getLatitude()
+                        + " lon: " + location.getLongitude());
+                sLocation = location;
+            }
+            Log.d(LOG_TAG, "requesting updates");
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME,
+                    MIN_DISTANCE, sLocationListener);
+
+//            MainActivity mMainActivity = (MainActivity)activity;
+//            mMainActivity.loadMap();
+        }
+    }
+
+    //checks if the app has permission to Geo location, and requests the permission if necessary
+    private static boolean checkLocationPermission(Activity activity) {
+        boolean isPermitted = false;
         if (ActivityCompat.checkSelfPermission(activity, FINE_LOCATION) !=
                 GRANTED && ActivityCompat.checkSelfPermission(activity,
                 COARSE_LOCATION) != GRANTED) {
             Log.d(LOG_TAG, "requesting permissions for starting");
             ActivityCompat.requestPermissions(activity, LOCATION_PERMISSIONS, REQUEST_CODE);
-            return;
+        } else {
+            isPermitted = true;
         }
-        Log.d(LOG_TAG, "requesting updates");
-        Location location =
-                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (location != null) {
-            Log.d(LOG_TAG, "last known lat: " + location.getLatitude()
-                    + " lon: " + location.getLongitude());
-            sLocation = location;
-        }
-        Log.d(LOG_TAG, "requesting updates");
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME,
-                MIN_DISTANCE, sLocationListener);
+        return isPermitted;
     }
 }
