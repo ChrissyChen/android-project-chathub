@@ -21,14 +21,7 @@ public class ChatMessage {
     private String name;
     private String photoUrl;
     private String imageUrl;
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
+    private String audioUrl;
 
     public ChatMessage() {
     }
@@ -42,6 +35,11 @@ public class ChatMessage {
     public ChatMessage(String text, String name, String photoUrl, String imageUrl) {
         this(text, name, photoUrl);
         this.imageUrl = imageUrl;
+    }
+
+    public ChatMessage(String text, String name, String photoUrl, String imageUrl, String audioUrl) {
+        this(text, name, photoUrl, imageUrl);
+        this.audioUrl = audioUrl;
     }
 
     public String getText() {
@@ -66,5 +64,21 @@ public class ChatMessage {
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getAudioUrl() {
+        return audioUrl;
+    }
+
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
     }
 }

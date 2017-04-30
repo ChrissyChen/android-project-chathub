@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.MediaRecorder;
@@ -61,6 +62,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import edu.sfsu.csc780.chathub.AudioUtil;
 import edu.sfsu.csc780.chathub.CameraUtil;
@@ -84,6 +86,7 @@ public class MainActivity extends AppCompatActivity
     public static final String ANONYMOUS = "anonymous";
     private static final int REQUEST_PICK_IMAGE = 1;
     private static final int REQUEST_TAKE_PHOTO = 2;
+    private static final int REQUEST_RECORD_AUDIO = 3;
     private static final int LOCATION_PERMISSION = LocationUtils.REQUEST_CODE;
     private static final int CAMERA_PERMISSION = CameraUtil.REQUEST_CODE;
     private static final int AUDIO_PERMISSION = AudioUtil.REQUEST_CODE;
@@ -291,15 +294,11 @@ public class MainActivity extends AppCompatActivity
     private void pickImage() {
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file browser
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-
         // Filter to only show results that can be "opened"
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-
         // Filter to show only images, using the image MIME data type.
         intent.setType("image/*");
-
         startActivityForResult(intent, REQUEST_PICK_IMAGE);
-
     }
 
     public void loadMap() {
@@ -323,7 +322,7 @@ public class MainActivity extends AppCompatActivity
                         } else {
                             uri = savePhotoImage(MainActivity.this, result);
                         }
-                        createImageMessage(uri);
+                        uploadImageMessage(uri);
                         // add for fixing the duplicate loaction map bug
                         MainActivity.this.getSupportLoaderManager().destroyLoader(0);
                     }
@@ -339,8 +338,6 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, REQUEST_TAKE_PHOTO);
     }
-
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -379,6 +376,7 @@ public class MainActivity extends AppCompatActivity
 
             case AUDIO_PERMISSION: {
                 if (isGranted) {
+                    //AudioUtil.recordVoice(MainActivity.this, mVoiceButton);
                     AudioUtil.recordVoice(MainActivity.this, mVoiceButton);
                     Log.d(TAG, "onRequestPermissionsResult recordVoice ___________________");
                 } else {
@@ -412,9 +410,9 @@ public class MainActivity extends AppCompatActivity
                 if (bitmap != resizedBitmap) {
                     uri = savePhotoImage(this, resizedBitmap);
                 }
-                createImageMessage(uri);
+                uploadImageMessage(uri);
             } else {
-                Log.e(TAG, "Cannot get image for uploading");
+                Log.e(TAG, "Cannot get an image for uploading");
             }
         }
 
@@ -423,18 +421,18 @@ public class MainActivity extends AppCompatActivity
                 Bundle extras = data.getExtras();
                 Bitmap bitmap = (Bitmap) extras.get("data");
                 Uri uri = savePhotoImage(this, bitmap);
-                createImageMessage(uri);
+                uploadImageMessage(uri);
                 saveImageToAlbum(this);
             } else {
-                Log.e(TAG, "Cannot take a photo");
+                Log.e(TAG, "Cannot get a photo for uploading");
             }
         }
     }
 
-    private void createImageMessage(Uri uri) {
+    private void uploadImageMessage(Uri uri) {
         if (uri == null) Log.e(TAG, "Could not create image message with null uri");
 
-        final StorageReference imageReference = MessageUtil.getImageStorageReference(mUser, uri);
+        final StorageReference imageReference = MessageUtil.getStorageReference(mUser, uri);
         UploadTask uploadTask = imageReference.putFile(uri);
         // Register observers to listen for when task is done or if it fails
         uploadTask.addOnFailureListener(new OnFailureListener() {
@@ -454,4 +452,29 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
+
+    public void uploadAudioMessage(Uri uri) {
+        if (uri == null) Log.e(TAG, "Could not create audio message with null uri");
+
+        final StorageReference audioReference = MessageUtil.getStorageReference(mUser, uri);
+        UploadTask uploadTask = audioReference.putFile(uri);
+        // Register observers to listen for when task is done or if it fails
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Log.e(TAG, "Failed to upload audio message");
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                ChatMessage chatMessage = new
+                        ChatMessage(mMessageEditText.getText().toString(),
+                        mUsername,
+                        mPhotoUrl, null, audioReference.toString());
+                MessageUtil.send(chatMessage);
+                mMessageEditText.setText("");
+            }
+        });
+    }
+
 }

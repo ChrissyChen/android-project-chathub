@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -31,7 +32,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import edu.sfsu.csc780.chathub.model.ChatMessage;
 
 /**
- * Created by cjkriese on 2/17/17.
+ * Created by Xinlu Chen on 4/2/17.
  */
 
 public class MessageUtil {
@@ -46,6 +47,7 @@ public class MessageUtil {
     public interface MessageLoadListener { public void onLoadComplete(); }
 
     public static void send(ChatMessage chatMessage) {
+        //update Firebase db
         sFirebaseDatabaseReference.child(MESSAGES_CHILD).push().setValue(chatMessage);
     }
 
@@ -54,13 +56,14 @@ public class MessageUtil {
         public TextView messengerTextView;
         public CircleImageView messengerImageView;
         public ImageView messageImageView;
+        public ImageButton voiceMessageImageButton;
         public MessageViewHolder(View v) {
             super(v);
             messageTextView = (TextView) itemView.findViewById(R.id.messageTextView);
             messengerTextView = (TextView) itemView.findViewById(R.id.messengerTextView);
-            messengerImageView =
-                    (CircleImageView) itemView.findViewById(R.id.messengerImageView);
+            messengerImageView = (CircleImageView) itemView.findViewById(R.id.messengerImageView);
             messageImageView = (ImageView) itemView.findViewById(R.id.messageImageView);
+            voiceMessageImageButton = (ImageButton) itemView.findViewById(R.id.voiceMessageImageButton);
         }
     }
 
@@ -100,7 +103,7 @@ public class MessageUtil {
                         }
 
                         if (chatMessage.getImageUrl() != null) {
-                            //Set view visibilities for a image message
+                            //Set view visibilities for an image message
                             viewHolder.messageImageView.setVisibility(View.VISIBLE);
                             viewHolder.messageTextView.setVisibility(View.GONE);
                             // load image for message
@@ -124,15 +127,17 @@ public class MessageUtil {
                                 viewHolder.messageTextView.setText("Error loading image");
                                 Log.e(LOG_TAG, e.getMessage() + " : " + chatMessage.getImageUrl());
                             }
+                        } else if (chatMessage.getAudioUrl() != null) {
+                            //Set view visibilities for an audio message
+                            viewHolder.voiceMessageImageButton.setVisibility(View.VISIBLE);
+                            viewHolder.messageTextView.setVisibility(View.GONE);
+
+
                         }
-//                        else if () {
-//
-//                            //voice message
-//
-//                        }
                         else {
                             //Set view visibilities for a text message
                             viewHolder.messageImageView.setVisibility(View.GONE);
+                            viewHolder.voiceMessageImageButton.setVisibility(View.GONE);
                             viewHolder.messageTextView.setVisibility(View.VISIBLE);
                         }
 
@@ -154,10 +159,9 @@ public class MessageUtil {
         return adapter;
     }
 
-    public static StorageReference getImageStorageReference(FirebaseUser user, Uri uri) {
+    public static StorageReference getStorageReference(FirebaseUser user, Uri uri) {
         //Create a blob storage reference with path : bucket/userId/timeMs/filename
         long nowMs = Calendar.getInstance().getTimeInMillis();
-
         return sStorage.getReference().child(user.getUid() + "/" + nowMs + "/" + uri
                 .getLastPathSegment());
     }

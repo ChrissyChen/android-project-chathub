@@ -16,7 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by cjkriese on 3/10/17.
+ * Created by Xinlu Chen on 04/10/17.
  */
 
 public class ImageUtil {
@@ -25,10 +25,6 @@ public class ImageUtil {
     public static final String IMAGE_FILE_NAME_PREFIX = "chathub-";
     private static final String TAG = ImageUtil.class.getSimpleName();
     private static File imageFile;
-
-//    public static File getImageFile () {
-//        return imageFile;
-//    }
 
     public static Bitmap scaleImage(Bitmap bitmap) {
         int originalHeight = bitmap.getHeight();

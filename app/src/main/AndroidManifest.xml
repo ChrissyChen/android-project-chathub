@@ -26,7 +26,6 @@
         <activity android:name="edu.sfsu.csc780.chathub.ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
