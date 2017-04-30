@@ -16,10 +16,12 @@
 package edu.sfsu.csc780.chathub.ui;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
@@ -60,6 +62,7 @@ import com.google.firebase.storage.UploadTask;
 import java.io.File;
 import java.io.IOException;
 
+import edu.sfsu.csc780.chathub.AudioUtil;
 import edu.sfsu.csc780.chathub.CameraUtil;
 import edu.sfsu.csc780.chathub.ImageUtil;
 import edu.sfsu.csc780.chathub.LocationUtils;
@@ -83,6 +86,7 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_TAKE_PHOTO = 2;
     private static final int LOCATION_PERMISSION = LocationUtils.REQUEST_CODE;
     private static final int CAMERA_PERMISSION = CameraUtil.REQUEST_CODE;
+    private static final int AUDIO_PERMISSION = AudioUtil.REQUEST_CODE;
     private String mUsername;
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
@@ -104,8 +108,7 @@ public class MainActivity extends AppCompatActivity
     private ImageButton mLocationButton;
     private ImageButton mCameraButton;
     private ImageButton mVoiceButton;
-    private boolean isStart = false;
-    private MediaRecorder mMediaRecorder = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -221,7 +224,8 @@ public class MainActivity extends AppCompatActivity
         mVoiceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                recordVoice();
+                AudioUtil.startAudio(MainActivity.this, mVoiceButton);
+                Log.d(TAG, "onClick startAudio~~~~~~~~~~");
             }
         });
     }
@@ -336,54 +340,7 @@ public class MainActivity extends AppCompatActivity
         startActivityForResult(intent, REQUEST_TAKE_PHOTO);
     }
 
-    private void recordVoice() {
-        if(!isStart){
-            startRecord();
-            //mVoiceButton.setText("Stop Record");
-            isStart = true;
-        }else{
-            stopRecord();
-            //btn_control.setText("Start Record");
-            isStart = false;
-        }
-    }
 
-    private void startRecord(){
-        if(mMediaRecorder == null){
-            File dir = new File(Environment.getExternalStorageDirectory(),"VoiceMessages");
-            if(!dir.exists()){
-                dir.mkdirs();
-            }
-            File soundFile = new File(dir,System.currentTimeMillis()+".amr");
-            if(!soundFile.exists()){
-                try {
-                    soundFile.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.d(TAG, "Can't create voice recording file");
-                }
-            }
-            mMediaRecorder = new MediaRecorder();
-            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);  //set Microphone audio source
-            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_WB);   //set the output as a AMR WB file format
-            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);   //set the AMR (Wideband) audio codec
-            mMediaRecorder.setOutputFile(soundFile.getAbsolutePath());
-            try {
-                mMediaRecorder.prepare();
-                mMediaRecorder.start();  //start recording
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void stopRecord(){
-        if(mMediaRecorder != null){
-            mMediaRecorder.stop();
-            mMediaRecorder.release();
-            mMediaRecorder = null;
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -416,6 +373,18 @@ public class MainActivity extends AppCompatActivity
                     mCameraButton.setEnabled(false);
                     Log.d(TAG, "onRequestPermissionsResult disenable the camera button +++++++++++++++");
                     mCameraButton.setAlpha((float) 0.2);
+                }
+                break;
+            }
+
+            case AUDIO_PERMISSION: {
+                if (isGranted) {
+                    AudioUtil.recordVoice(MainActivity.this, mVoiceButton);
+                    Log.d(TAG, "onRequestPermissionsResult recordVoice ___________________");
+                } else {
+                    mVoiceButton.setEnabled(false);
+                    Log.d(TAG, "onRequestPermissionsResult disenable the voice button +++++++++++++++");
+                    mVoiceButton.setAlpha((float) 0.2);
                 }
                 break;
             }
