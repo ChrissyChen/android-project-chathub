@@ -195,8 +195,8 @@ public class MainActivity extends AppCompatActivity
         mImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pickImage();
                 Log.d(TAG, "onClick pickImage ==============");
+                pickImage();
             }
         });
 
@@ -217,9 +217,8 @@ public class MainActivity extends AppCompatActivity
         mCameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CameraUtil.startCamera(MainActivity.this);
                 Log.d(TAG, "onClick startcamera~~~~~~~~~~");
-
+                CameraUtil.startCamera(MainActivity.this);
             }
         });
 
@@ -227,8 +226,8 @@ public class MainActivity extends AppCompatActivity
         mVoiceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AudioUtil.startAudio(MainActivity.this, mVoiceButton);
                 Log.d(TAG, "onClick startAudio~~~~~~~~~~");
+                AudioUtil.startAudio(MainActivity.this, mVoiceButton);
             }
         });
     }
@@ -449,6 +448,12 @@ public class MainActivity extends AppCompatActivity
                         mPhotoUrl, imageReference.toString());
                 MessageUtil.send(chatMessage);
                 mMessageEditText.setText("");
+                Log.d(TAG, "successfully upload image message to firebase");
+                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
+                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
+                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
+                Log.d(TAG, "user: " + chatMessage.getName());
+                Log.d(TAG, "text: " + chatMessage.getText());
             }
         });
     }
@@ -473,6 +478,12 @@ public class MainActivity extends AppCompatActivity
                         mPhotoUrl, null, audioReference.toString());
                 MessageUtil.send(chatMessage);
                 mMessageEditText.setText("");
+                Log.d(TAG, "successfully upload audio message to firebase");
+                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
+                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
+                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
+                Log.d(TAG, "user: " + chatMessage.getName());
+                Log.d(TAG, "text: " + chatMessage.getText());
             }
         });
     }

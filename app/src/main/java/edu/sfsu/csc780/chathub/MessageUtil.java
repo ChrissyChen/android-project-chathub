@@ -106,6 +106,7 @@ public class MessageUtil {
                             //Set view visibilities for an image message
                             viewHolder.messageImageView.setVisibility(View.VISIBLE);
                             viewHolder.messageTextView.setVisibility(View.GONE);
+                            viewHolder.voiceMessageImageButton.setVisibility(View.GONE);
                             // load image for message
                             try {
                                 final StorageReference gsReference =
@@ -127,20 +128,22 @@ public class MessageUtil {
                                 viewHolder.messageTextView.setText("Error loading image");
                                 Log.e(LOG_TAG, e.getMessage() + " : " + chatMessage.getImageUrl());
                             }
+                            Log.d(LOG_TAG, "show image message");
+
                         } else if (chatMessage.getAudioUrl() != null) {
                             //Set view visibilities for an audio message
                             viewHolder.voiceMessageImageButton.setVisibility(View.VISIBLE);
+                            viewHolder.messageImageView.setVisibility(View.GONE);
                             viewHolder.messageTextView.setVisibility(View.GONE);
-
-
+                            Log.d(LOG_TAG, "show audio message");
                         }
                         else {
                             //Set view visibilities for a text message
+                            viewHolder.messageTextView.setVisibility(View.VISIBLE);
                             viewHolder.messageImageView.setVisibility(View.GONE);
                             viewHolder.voiceMessageImageButton.setVisibility(View.GONE);
-                            viewHolder.messageTextView.setVisibility(View.VISIBLE);
+                            Log.d(LOG_TAG, "show text message");
                         }
-
                     }
                 };
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {

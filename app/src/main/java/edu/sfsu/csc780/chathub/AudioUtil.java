@@ -111,6 +111,7 @@ public class AudioUtil {
             sMediaRecorder.stop();
             sMediaRecorder.release();
             sMediaRecorder = null;
+            Log.d(LOG_TAG,"Stop recording");
         }
     }
 }
