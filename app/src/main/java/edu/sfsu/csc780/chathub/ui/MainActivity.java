@@ -16,12 +16,17 @@
 package edu.sfsu.csc780.chathub.ui;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -55,6 +60,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import edu.sfsu.csc780.chathub.AudioUtil;
 import edu.sfsu.csc780.chathub.CameraUtil;
 import edu.sfsu.csc780.chathub.ImageUtil;
 import edu.sfsu.csc780.chathub.LocationUtils;
@@ -76,8 +86,10 @@ public class MainActivity extends AppCompatActivity
     public static final String ANONYMOUS = "anonymous";
     private static final int REQUEST_PICK_IMAGE = 1;
     private static final int REQUEST_TAKE_PHOTO = 2;
+    private static final int REQUEST_RECORD_AUDIO = 3;
     private static final int LOCATION_PERMISSION = LocationUtils.REQUEST_CODE;
     private static final int CAMERA_PERMISSION = CameraUtil.REQUEST_CODE;
+    private static final int AUDIO_PERMISSION = AudioUtil.REQUEST_CODE;
     private String mUsername;
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
@@ -98,6 +110,8 @@ public class MainActivity extends AppCompatActivity
     private ImageButton mImageButton;
     private ImageButton mLocationButton;
     private ImageButton mCameraButton;
+    private ImageButton mVoiceButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,12 +123,14 @@ public class MainActivity extends AppCompatActivity
         //Initialize Auth
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
+        //Log.d("mUser", String.valueOf(mUser));
         if (mUser == null) {
             startActivity(new Intent(this, SignInActivity.class));
             finish();
             return;
         } else {
             mUsername = mUser.getDisplayName();
+            //Log.d(TAG, mUsername);
             if (mUser.getPhotoUrl() != null) {
                 mPhotoUrl = mUser.getPhotoUrl().toString();
             }
@@ -179,8 +195,8 @@ public class MainActivity extends AppCompatActivity
         mImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pickImage();
                 Log.d(TAG, "onClick pickImage ==============");
+                pickImage();
             }
         });
 
@@ -201,9 +217,17 @@ public class MainActivity extends AppCompatActivity
         mCameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CameraUtil.startCamera(MainActivity.this);
                 Log.d(TAG, "onClick startcamera~~~~~~~~~~");
+                CameraUtil.startCamera(MainActivity.this);
+            }
+        });
 
+        mVoiceButton = (ImageButton) findViewById(R.id.voiceButton);
+        mVoiceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick startAudio~~~~~~~~~~");
+                AudioUtil.startAudio(MainActivity.this, mVoiceButton);
             }
         });
     }
@@ -269,15 +293,11 @@ public class MainActivity extends AppCompatActivity
     private void pickImage() {
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file browser
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-
         // Filter to only show results that can be "opened"
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-
         // Filter to show only images, using the image MIME data type.
         intent.setType("image/*");
-
         startActivityForResult(intent, REQUEST_PICK_IMAGE);
-
     }
 
     public void loadMap() {
@@ -301,7 +321,7 @@ public class MainActivity extends AppCompatActivity
                         } else {
                             uri = savePhotoImage(MainActivity.this, result);
                         }
-                        createImageMessage(uri);
+                        uploadImageMessage(uri);
                         // add for fixing the duplicate loaction map bug
                         MainActivity.this.getSupportLoaderManager().destroyLoader(0);
                     }
@@ -352,6 +372,19 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
             }
+
+            case AUDIO_PERMISSION: {
+                if (isGranted) {
+                    //AudioUtil.recordVoice(MainActivity.this, mVoiceButton);
+                    AudioUtil.recordVoice(MainActivity.this, mVoiceButton);
+                    Log.d(TAG, "onRequestPermissionsResult recordVoice ___________________");
+                } else {
+                    mVoiceButton.setEnabled(false);
+                    Log.d(TAG, "onRequestPermissionsResult disenable the voice button +++++++++++++++");
+                    mVoiceButton.setAlpha((float) 0.2);
+                }
+                break;
+            }
         }
     }
 
@@ -376,9 +409,9 @@ public class MainActivity extends AppCompatActivity
                 if (bitmap != resizedBitmap) {
                     uri = savePhotoImage(this, resizedBitmap);
                 }
-                createImageMessage(uri);
+                uploadImageMessage(uri);
             } else {
-                Log.e(TAG, "Cannot get image for uploading");
+                Log.e(TAG, "Cannot get an image for uploading");
             }
         }
 
@@ -387,18 +420,18 @@ public class MainActivity extends AppCompatActivity
                 Bundle extras = data.getExtras();
                 Bitmap bitmap = (Bitmap) extras.get("data");
                 Uri uri = savePhotoImage(this, bitmap);
-                createImageMessage(uri);
+                uploadImageMessage(uri);
                 saveImageToAlbum(this);
             } else {
-                Log.e(TAG, "Cannot take a photo");
+                Log.e(TAG, "Cannot get a photo for uploading");
             }
         }
     }
 
-    private void createImageMessage(Uri uri) {
+    private void uploadImageMessage(Uri uri) {
         if (uri == null) Log.e(TAG, "Could not create image message with null uri");
 
-        final StorageReference imageReference = MessageUtil.getImageStorageReference(mUser, uri);
+        final StorageReference imageReference = MessageUtil.getStorageReference(mUser, uri);
         UploadTask uploadTask = imageReference.putFile(uri);
         // Register observers to listen for when task is done or if it fails
         uploadTask.addOnFailureListener(new OnFailureListener() {
@@ -415,7 +448,44 @@ public class MainActivity extends AppCompatActivity
                         mPhotoUrl, imageReference.toString());
                 MessageUtil.send(chatMessage);
                 mMessageEditText.setText("");
+                Log.d(TAG, "successfully upload image message to firebase");
+                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
+                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
+                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
+                Log.d(TAG, "user: " + chatMessage.getName());
+                Log.d(TAG, "text: " + chatMessage.getText());
             }
         });
     }
+
+    public void uploadAudioMessage(Uri uri) {
+        if (uri == null) Log.e(TAG, "Could not create audio message with null uri");
+
+        final StorageReference audioReference = MessageUtil.getStorageReference(mUser, uri);
+        UploadTask uploadTask = audioReference.putFile(uri);
+        // Register observers to listen for when task is done or if it fails
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Log.e(TAG, "Failed to upload audio message");
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                ChatMessage chatMessage = new
+                        ChatMessage(mMessageEditText.getText().toString(),
+                        mUsername,
+                        mPhotoUrl, null, audioReference.toString());
+                MessageUtil.send(chatMessage);
+                mMessageEditText.setText("");
+                Log.d(TAG, "successfully upload audio message to firebase");
+                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
+                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
+                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
+                Log.d(TAG, "user: " + chatMessage.getName());
+                Log.d(TAG, "text: " + chatMessage.getText());
+            }
+        });
+    }
+
 }
