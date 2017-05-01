@@ -2,6 +2,8 @@ package edu.sfsu.csc780.chathub;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -26,6 +28,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.IOException;
 import java.util.Calendar;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -43,6 +46,7 @@ public class MessageUtil {
     private static MessageLoadListener sAdapterListener;
     private static FirebaseAuth sFirebaseAuth;
     private static FirebaseStorage sStorage = FirebaseStorage.getInstance();
+    private static MediaPlayer mediaPlayer = new MediaPlayer();
 
     public interface MessageLoadListener { public void onLoadComplete(); }
 
@@ -80,7 +84,7 @@ public class MessageUtil {
                         sFirebaseDatabaseReference.child(MESSAGES_CHILD)) {
                     @Override
                     protected void populateViewHolder(final MessageViewHolder viewHolder,
-                                                      ChatMessage chatMessage, int position) {
+                                                      final ChatMessage chatMessage, int position) {
                         sAdapterListener.onLoadComplete();
                         viewHolder.messageTextView.setText(chatMessage.getText());
                         viewHolder.messengerTextView.setText(chatMessage.getName());
@@ -103,6 +107,7 @@ public class MessageUtil {
                         }
 
                         if (chatMessage.getImageUrl() != null) {
+                            Log.d(LOG_TAG, "show image message");
                             //Set view visibilities for an image message
                             viewHolder.messageImageView.setVisibility(View.VISIBLE);
                             viewHolder.messageTextView.setVisibility(View.GONE);
@@ -128,21 +133,60 @@ public class MessageUtil {
                                 viewHolder.messageTextView.setText("Error loading image");
                                 Log.e(LOG_TAG, e.getMessage() + " : " + chatMessage.getImageUrl());
                             }
-                            Log.d(LOG_TAG, "show image message");
 
                         } else if (chatMessage.getAudioUrl() != null) {
+                            Log.d(LOG_TAG, "show audio message");
                             //Set view visibilities for an audio message
                             viewHolder.voiceMessageImageButton.setVisibility(View.VISIBLE);
                             viewHolder.messageImageView.setVisibility(View.GONE);
                             viewHolder.messageTextView.setVisibility(View.GONE);
-                            Log.d(LOG_TAG, "show audio message");
+
+                            final StorageReference gsReference =
+                                    sStorage.getReferenceFromUrl(chatMessage.getAudioUrl());
+                            gsReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(final Uri uri) {
+                                    Log.d(LOG_TAG, "AUDIO URL: " + chatMessage.getAudioUrl());
+                                    viewHolder.voiceMessageImageButton.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            if (mediaPlayer.isPlaying()) return; //avoid multiple clicks at the same time
+                                            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                                            try {
+                                                mediaPlayer.setDataSource(uri.toString());
+                                                Log.d(LOG_TAG, "AUDIO download from uri: " + uri.toString());
+                                                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                                    @Override
+                                                    public void onPrepared(MediaPlayer mp) {
+                                                        mediaPlayer.start();
+                                                    }
+                                                });
+                                                mediaPlayer.prepareAsync();
+                                                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                                    @Override
+                                                    public void onCompletion(MediaPlayer mediaPlayer) {
+                                                        mediaPlayer.reset();
+                                                    }
+                                                });
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    Log.e(LOG_TAG, "Could not play the voice message", exception);
+                                }
+                            });
                         }
                         else {
+                            Log.d(LOG_TAG, "show text message");
                             //Set view visibilities for a text message
                             viewHolder.messageTextView.setVisibility(View.VISIBLE);
                             viewHolder.messageImageView.setVisibility(View.GONE);
                             viewHolder.voiceMessageImageButton.setVisibility(View.GONE);
-                            Log.d(LOG_TAG, "show text message");
                         }
                     }
                 };
