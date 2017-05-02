@@ -11,6 +11,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.List;
 
 import edu.sfsu.csc780.chathub.R;
@@ -21,6 +28,9 @@ import edu.sfsu.csc780.chathub.R;
 public class SearchMessageActivity extends AppCompatActivity {
 
     private static final String TAG = "SearchMessageActivity";
+    private final String MESSAGES_CHILD = "messages";
+    private DatabaseReference mFirebaseDatabaseReference =
+                    FirebaseDatabase.getInstance().getReference();
     private EditText mSearchBarEditText;
     private Button mSearchButton;
     private Button mCancelButton;
@@ -78,6 +88,30 @@ public class SearchMessageActivity extends AppCompatActivity {
 
 
     private void searchMessage() {
+        String queryText = mSearchBarEditText.getText().toString();
+        Log.d(TAG, "user types the keyword: " + queryText);
+        Query query = mFirebaseDatabaseReference.child(MESSAGES_CHILD)
+                .orderByChild("text")
+                .startAt(queryText)
+                .endAt(queryText+"\uf8ff");
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // dataSnapshot is the "messages" node with all children with text starts with queryText
+                    for (DataSnapshot messages : dataSnapshot.getChildren()) {
+                        Log.d(TAG, "related messages: " + messages.getKey());  //-KikpYt6Ns9jf9V11AHL
+                        Log.d(TAG, "related messages: " + messages.getValue().toString());//{text=test, name=Chrissy Chen, photoUrl=https://lh5.googleusercontent.com/-j6CO4VXGJy4/AAAAAAAAAAI/AAAAAAAAAAA/ADPlhfItI0yF2xEd1MXMujMM9f1p1dUC8w/s96-c/photo.jpg}
+                        Log.d(TAG, "related messages: " + messages.toString()); //DataSnapshot { key = -KikpYt6Ns9jf9V11AHL, value = {text=test, name=Chrissy Chen, photoUrl=https://lh5.googleusercontent.com/-j6CO4VXGJy4/AAAAAAAAAAI/AAAAAAAAAAA/ADPlhfItI0yF2xEd1MXMujMM9f1p1dUC8w/s96-c/photo.jpg} }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
     }
 }
