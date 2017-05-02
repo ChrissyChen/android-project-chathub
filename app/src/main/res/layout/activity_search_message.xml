@@ -27,7 +27,8 @@
             android:layout_weight="3"
             android:alpha="0.8"
             android:maxLines="1"
-            android:hint="keyword"/>
+            android:hint="keyword"
+            android:inputType="textNoSuggestions"/>
 
         <Button
             android:id="@+id/searchButton"
