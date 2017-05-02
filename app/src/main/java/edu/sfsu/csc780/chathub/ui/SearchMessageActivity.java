@@ -1,17 +1,27 @@
 package edu.sfsu.csc780.chathub.ui;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -22,6 +32,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+import edu.sfsu.csc780.chathub.MessageUtil;
 import edu.sfsu.csc780.chathub.R;
 import edu.sfsu.csc780.chathub.model.ChatMessage;
 
@@ -33,13 +45,21 @@ public class SearchMessageActivity extends AppCompatActivity {
     private static final String TAG = "SearchMessageActivity";
     private final String MESSAGES_CHILD = "messages";
     private DatabaseReference mFirebaseDatabaseReference =
-                    FirebaseDatabase.getInstance().getReference();
+            FirebaseDatabase.getInstance().getReference();
     private EditText mSearchBarEditText;
     private Button mSearchButton;
     private Button mCancelButton;
     private ListView mSearchResultListView;
     private ArrayAdapter mArrayAdapter;
     private ArrayList<String> mResultList;
+    private TextView mNoResultTextView;
+    private TextView mEmptyTextView;
+
+//    private RecyclerView mSearchResultRecyclerView;
+//    private LinearLayoutManager mLinearLayoutManager;
+//    private FirebaseRecyclerAdapter<ChatMessage, RetrievedMessageViewHolder>
+//            mFirebaseAdapterSearch;
+//    private static MessageUtil.MessageLoadListener sAdapterListenerSearch;
 
 
     @Override
@@ -51,6 +71,7 @@ public class SearchMessageActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
+
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 if (charSequence.toString().trim().length() > 0) {
@@ -59,8 +80,13 @@ public class SearchMessageActivity extends AppCompatActivity {
                 } else {
                     mSearchButton.setEnabled(false);
                     Log.d(TAG, "search button is disabled");
+
+                    // CLEAR THE LIST VIEW
+                    mSearchResultListView.setAdapter(null);
+                    mNoResultTextView.setVisibility(View.GONE);
                 }
             }
+
             @Override
             public void afterTextChanged(Editable editable) {
             }
@@ -85,6 +111,19 @@ public class SearchMessageActivity extends AppCompatActivity {
         });
 
         mSearchResultListView = (ListView) findViewById(R.id.searchResultListView);
+        mNoResultTextView = (TextView) findViewById(R.id.noResult);
+
+//        mSearchResultRecyclerView = (RecyclerView) findViewById(R.id.searchResultRecyclerView);
+//        mLinearLayoutManager = new LinearLayoutManager(this);
+//        mLinearLayoutManager.setStackFromEnd(true);
+//        mSearchResultRecyclerView.setLayoutManager(mLinearLayoutManager);
+//
+//        mFirebaseAdapterSearch = getFirebaseAdapter(this,
+//                sAdapterListenerSearch,  /* MessageLoadListener */
+//                mLinearLayoutManager,
+//                mSearchResultRecyclerView);
+//
+//        mSearchResultRecyclerView.setAdapter(mFirebaseAdapterSearch);
     }
 
 
@@ -95,7 +134,7 @@ public class SearchMessageActivity extends AppCompatActivity {
         Query query = mFirebaseDatabaseReference.child(MESSAGES_CHILD)
                 .orderByChild("text")
                 .startAt(queryText)
-                .endAt(queryText+"\uf8ff");
+                .endAt(queryText + "\uf8ff");
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -111,6 +150,12 @@ public class SearchMessageActivity extends AppCompatActivity {
                     }
                     mArrayAdapter = new ArrayAdapter(SearchMessageActivity.this, R.layout.item_message, R.id.messageTextView, mResultList);
                     mSearchResultListView.setAdapter(mArrayAdapter);
+                } else {
+                    Log.d(TAG, "no result found");
+                    // show a no result found message
+                    mSearchResultListView.setAdapter(null);
+                    mNoResultTextView.setVisibility(View.VISIBLE);
+                    mSearchResultListView.setEmptyView(mNoResultTextView);
                 }
             }
 
@@ -118,6 +163,56 @@ public class SearchMessageActivity extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-
     }
+
+//    class RetrievedMessageViewHolder extends RecyclerView.ViewHolder {
+//        public TextView messageTextView;
+//        public TextView messengerTextView;
+//        public CircleImageView messengerImageView;
+//
+//        public RetrievedMessageViewHolder(View v) {
+//            super(v);
+//            messageTextView = (TextView) itemView.findViewById(R.id.messageTextView);
+//            messengerTextView = (TextView) itemView.findViewById(R.id.messengerTextView);
+//            messengerImageView = (CircleImageView) itemView.findViewById(R.id.messengerImageView);
+//        }
+//    }
+//
+//    public FirebaseRecyclerAdapter getFirebaseAdapter(final Activity activity,
+//                                                      MessageUtil.MessageLoadListener listener,
+//                                                      final LinearLayoutManager linearManager,
+//                                                      final RecyclerView recyclerView) {
+//        sAdapterListenerSearch = listener;
+//        final FirebaseRecyclerAdapter adapter =
+//                new FirebaseRecyclerAdapter<ChatMessage, RetrievedMessageViewHolder>(
+//                        ChatMessage.class,
+//                        R.layout.item_message,
+//                        RetrievedMessageViewHolder.class,
+//                        mFirebaseDatabaseReference.child(MESSAGES_CHILD)) {
+//                    @Override
+//                    protected void populateViewHolder(final RetrievedMessageViewHolder viewHolder,
+//                                                      final ChatMessage chatMessage, int position) {
+//                        sAdapterListenerSearch.onLoadComplete();
+//                        viewHolder.messageTextView.setText(chatMessage.getText());
+//                        viewHolder.messengerTextView.setText(chatMessage.getName());
+//
+//                        SimpleTarget target = new SimpleTarget<Bitmap>() {
+//                            @Override
+//                            public void onResourceReady(Bitmap bitmap, GlideAnimation glideAnimation) {
+//                                viewHolder.messengerImageView.setImageBitmap(bitmap);
+//                            }
+//                        };
+//                        Glide.with(activity)
+//                                .load(chatMessage.getPhotoUrl())
+//                                .asBitmap()
+//                                .into(target);
+//
+//                    }
+//                };
+//
+//        return adapter;
+//    }
+
+
 }
+
