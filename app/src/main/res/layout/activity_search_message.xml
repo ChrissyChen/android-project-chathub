@@ -18,7 +18,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:srcCompat="@drawable/ic_search_black_24px"
-            android:layout_margin="10dp"/>
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="5dp"/>
 
         <EditText
             android:id="@+id/searchBarEditText"
@@ -36,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="3dp"/>
+            android:padding="1dp" />
 
         <Button
             android:id="@+id/cancelButton"
@@ -44,7 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="3dp"/>
+            android:padding="1dp"/>
 
 
     </LinearLayout>

@@ -250,26 +250,6 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-
-//        inflater.inflate(R.menu.search_menu, menu);
-//        MenuItem menuItem = menu.findItem(R.id.searchMenu);
-//        SearchView searchView = (SearchView)menuItem.getActionView();
-//
-//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-//            @Override
-//            public boolean onQueryTextSubmit(String query) {
-//                Log.d(TAG, "on query text submit: ");
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean onQueryTextChange(String newText) {
-//                Log.d(TAG, "on query text change: " + mFirebaseAdapter.getItemCount());
-//                return false;
-//            }
-//        });
-
-
         return super.onCreateOptionsMenu(menu);
     }
 
