@@ -4,4 +4,7 @@
     <string name="sign_out">Sign Out</string>
     <string name="contacts_permission_rationale">Access to account information is required to sign in.</string>
     <string name="sign_in">Sign In</string>
+    <string name="search_message">Search Message</string>
+    <string name="search_button">Search</string>
+    <string name="cancel_button">Cancel</string>
 </resources>

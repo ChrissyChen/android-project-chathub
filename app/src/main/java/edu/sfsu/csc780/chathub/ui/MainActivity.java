@@ -16,17 +16,12 @@
 package edu.sfsu.csc780.chathub.ui;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -36,6 +31,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
@@ -60,10 +56,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 import edu.sfsu.csc780.chathub.AudioUtil;
 import edu.sfsu.csc780.chathub.CameraUtil;
 import edu.sfsu.csc780.chathub.ImageUtil;
@@ -72,7 +64,6 @@ import edu.sfsu.csc780.chathub.MapLoader;
 import edu.sfsu.csc780.chathub.MessageUtil;
 import edu.sfsu.csc780.chathub.R;
 import edu.sfsu.csc780.chathub.model.ChatMessage;
-import edu.sfsu.csc780.chathub.ui.SignInActivity;
 
 import static edu.sfsu.csc780.chathub.ImageUtil.saveImageToAlbum;
 import static edu.sfsu.csc780.chathub.ImageUtil.savePhotoImage;
@@ -86,7 +77,6 @@ public class MainActivity extends AppCompatActivity
     public static final String ANONYMOUS = "anonymous";
     private static final int REQUEST_PICK_IMAGE = 1;
     private static final int REQUEST_TAKE_PHOTO = 2;
-    private static final int REQUEST_RECORD_AUDIO = 3;
     private static final int LOCATION_PERMISSION = LocationUtils.REQUEST_CODE;
     private static final int CAMERA_PERMISSION = CameraUtil.REQUEST_CODE;
     private static final int AUDIO_PERMISSION = AudioUtil.REQUEST_CODE;
@@ -260,7 +250,27 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-        return true;
+
+//        inflater.inflate(R.menu.search_menu, menu);
+//        MenuItem menuItem = menu.findItem(R.id.searchMenu);
+//        SearchView searchView = (SearchView)menuItem.getActionView();
+//
+//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                Log.d(TAG, "on query text submit: ");
+//                return false;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                Log.d(TAG, "on query text change: " + mFirebaseAdapter.getItemCount());
+//                return false;
+//            }
+//        });
+
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -271,6 +281,10 @@ public class MainActivity extends AppCompatActivity
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 mUsername = ANONYMOUS;
                 startActivity(new Intent(this, SignInActivity.class));
+                return true;
+
+            case R.id.search_message_menu:
+                startActivity(new Intent(this, SearchMessageActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -375,7 +389,6 @@ public class MainActivity extends AppCompatActivity
 
             case AUDIO_PERMISSION: {
                 if (isGranted) {
-                    //AudioUtil.recordVoice(MainActivity.this, mVoiceButton);
                     AudioUtil.recordVoice(MainActivity.this, mVoiceButton);
                     Log.d(TAG, "onRequestPermissionsResult recordVoice ___________________");
                 } else {
