@@ -86,7 +86,6 @@ public class AudioUtil {
                     soundFile.createNewFile();
                     sAudioFileUri = Uri.fromFile(soundFile);
                     Log.d(LOG_TAG, "audio file uri: " + sAudioFileUri.toString());
-//                    Log.d(LOG_TAG, "audio file path: " + soundFile.getAbsolutePath());
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.d(LOG_TAG, "Can't create voice recording file");

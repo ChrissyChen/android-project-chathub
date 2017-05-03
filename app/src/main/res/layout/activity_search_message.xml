@@ -69,11 +69,5 @@
             android:text="@string/no_result"
             android:layout_weight="0.03"
             android:visibility="gone"/>
-
     </LinearLayout>
-
-    <!--<android.support.v7.widget.RecyclerView-->
-        <!--android:id="@+id/searchResultRecyclerView"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent" />-->
 </LinearLayout>

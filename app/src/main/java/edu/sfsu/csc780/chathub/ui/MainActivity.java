@@ -31,7 +31,6 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
@@ -73,7 +72,7 @@ public class MainActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener, MessageUtil.MessageLoadListener {
 
     private static final String TAG = "MainActivity";
-    public static final int MSG_LENGTH_LIMIT = 10;
+    public static final int MSG_LENGTH_LIMIT = 20;
     public static final String ANONYMOUS = "anonymous";
     private static final int REQUEST_PICK_IMAGE = 1;
     private static final int REQUEST_TAKE_PHOTO = 2;
@@ -194,12 +193,7 @@ public class MainActivity extends AppCompatActivity
         mLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //LocationUtils.checkLocationPermission(MainActivity.this);
-                //Log.d(TAG, "onClick checkLocationPermission!!!!!!!!!!!!!!!!");
-//                LocationUtils.startLocationUpdates(MainActivity.this);
-//                Log.d(TAG, "onClick startLocationUpdates!!!!!!!!!!!!!!!!");
                 loadMap();
-
             }
         });
 
@@ -345,12 +339,6 @@ public class MainActivity extends AppCompatActivity
                 if (isGranted) {
                     LocationUtils.startLocationUpdates(this);
                     Log.d(TAG, "onRequestPermissionsResult startLocationUpdates!!!!!!!!!!!!!!!!");
-//                    loadMap();
-//                    Log.d(TAG, "onRequestPermissionsResult loadMap +++++++++++++++");
-                } else {
-//                    mLocationButton.setEnabled(false);
-//                    Log.d(TAG, "onRequestPermissionsResult disenable the location button +++++++++++++++");
-//                    mLocationButton.setAlpha((float) 0.5);
                 }
                 break;
             }
@@ -423,6 +411,7 @@ public class MainActivity extends AppCompatActivity
 
     private void uploadImageMessage(Uri uri) {
         if (uri == null) Log.e(TAG, "Could not create image message with null uri");
+        Log.d(TAG, "image uri: " + uri);
 
         final StorageReference imageReference = MessageUtil.getStorageReference(mUser, uri);
         UploadTask uploadTask = imageReference.putFile(uri);
@@ -442,11 +431,11 @@ public class MainActivity extends AppCompatActivity
                 MessageUtil.send(chatMessage);
                 mMessageEditText.setText("");
                 Log.d(TAG, "successfully upload image message to firebase");
-                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
-                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
-                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
-                Log.d(TAG, "user: " + chatMessage.getName());
-                Log.d(TAG, "text: " + chatMessage.getText());
+//                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
+//                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
+//                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
+//                Log.d(TAG, "user: " + chatMessage.getName());
+//                Log.d(TAG, "text: " + chatMessage.getText());
             }
         });
     }
@@ -472,11 +461,11 @@ public class MainActivity extends AppCompatActivity
                 MessageUtil.send(chatMessage);
                 mMessageEditText.setText("");
                 Log.d(TAG, "successfully upload audio message to firebase");
-                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
-                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
-                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
-                Log.d(TAG, "user: " + chatMessage.getName());
-                Log.d(TAG, "text: " + chatMessage.getText());
+//                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
+//                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
+//                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
+//                Log.d(TAG, "user: " + chatMessage.getName());
+//                Log.d(TAG, "text: " + chatMessage.getText());
             }
         });
     }

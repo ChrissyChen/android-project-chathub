@@ -1,27 +1,27 @@
 package edu.sfsu.csc780.chathub.ui;
 
-import android.app.Activity;
+
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import edu.sfsu.csc780.chathub.MessageUtil;
 import edu.sfsu.csc780.chathub.R;
 import edu.sfsu.csc780.chathub.model.ChatMessage;
 
@@ -50,17 +49,9 @@ public class SearchMessageActivity extends AppCompatActivity {
     private Button mSearchButton;
     private Button mCancelButton;
     private ListView mSearchResultListView;
-    private ArrayAdapter mArrayAdapter;
-    private ArrayList<String> mResultList;
+    private ArrayList<ChatMessage> mResultList;
     private TextView mNoResultTextView;
-    private TextView mEmptyTextView;
-
-//    private RecyclerView mSearchResultRecyclerView;
-//    private LinearLayoutManager mLinearLayoutManager;
-//    private FirebaseRecyclerAdapter<ChatMessage, RetrievedMessageViewHolder>
-//            mFirebaseAdapterSearch;
-//    private static MessageUtil.MessageLoadListener sAdapterListenerSearch;
-
+    private SearchMessageAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,8 +71,7 @@ public class SearchMessageActivity extends AppCompatActivity {
                 } else {
                     mSearchButton.setEnabled(false);
                     Log.d(TAG, "search button is disabled");
-
-                    // CLEAR THE LIST VIEW
+                    // clear the list view
                     mSearchResultListView.setAdapter(null);
                     mNoResultTextView.setVisibility(View.GONE);
                 }
@@ -112,18 +102,6 @@ public class SearchMessageActivity extends AppCompatActivity {
 
         mSearchResultListView = (ListView) findViewById(R.id.searchResultListView);
         mNoResultTextView = (TextView) findViewById(R.id.noResult);
-
-//        mSearchResultRecyclerView = (RecyclerView) findViewById(R.id.searchResultRecyclerView);
-//        mLinearLayoutManager = new LinearLayoutManager(this);
-//        mLinearLayoutManager.setStackFromEnd(true);
-//        mSearchResultRecyclerView.setLayoutManager(mLinearLayoutManager);
-//
-//        mFirebaseAdapterSearch = getFirebaseAdapter(this,
-//                sAdapterListenerSearch,  /* MessageLoadListener */
-//                mLinearLayoutManager,
-//                mSearchResultRecyclerView);
-//
-//        mSearchResultRecyclerView.setAdapter(mFirebaseAdapterSearch);
     }
 
 
@@ -142,14 +120,12 @@ public class SearchMessageActivity extends AppCompatActivity {
                 if (dataSnapshot.exists()) {
                     // dataSnapshot is the "messages" node with all children with text starts with queryText
                     for (DataSnapshot message : dataSnapshot.getChildren()) {
-//                        Log.d(TAG, "related messages: " + message.getKey());  //-KikpYt6Ns9jf9V11AHL
-//                        Log.d(TAG, "related messages: " + message.getValue().toString());//{text=test, name=Chrissy Chen, photoUrl=https://lh5.googleusercontent.com/-j6CO4VXGJy4/AAAAAAAAAAI/AAAAAAAAAAA/ADPlhfItI0yF2xEd1MXMujMM9f1p1dUC8w/s96-c/photo.jpg}
-//                        Log.d(TAG, "related messages: " + message.toString()); //DataSnapshot { key = -KikpYt6Ns9jf9V11AHL, value = {text=test, name=Chrissy Chen, photoUrl=https://lh5.googleusercontent.com/-j6CO4VXGJy4/AAAAAAAAAAI/AAAAAAAAAAA/ADPlhfItI0yF2xEd1MXMujMM9f1p1dUC8w/s96-c/photo.jpg} }
                         ChatMessage chatMessage = new ChatMessage((HashMap<String, String>) message.getValue());
-                        mResultList.add(chatMessage.getText());
+                        mResultList.add(chatMessage);
                     }
-                    mArrayAdapter = new ArrayAdapter(SearchMessageActivity.this, R.layout.item_message, R.id.messageTextView, mResultList);
-                    mSearchResultListView.setAdapter(mArrayAdapter);
+                    mAdapter = new SearchMessageAdapter(mResultList, SearchMessageActivity.this);
+                    mSearchResultListView.setAdapter(mAdapter);
+
                 } else {
                     Log.d(TAG, "no result found");
                     // show a no result found message
@@ -165,54 +141,56 @@ public class SearchMessageActivity extends AppCompatActivity {
         });
     }
 
-//    class RetrievedMessageViewHolder extends RecyclerView.ViewHolder {
-//        public TextView messageTextView;
-//        public TextView messengerTextView;
-//        public CircleImageView messengerImageView;
-//
-//        public RetrievedMessageViewHolder(View v) {
-//            super(v);
-//            messageTextView = (TextView) itemView.findViewById(R.id.messageTextView);
-//            messengerTextView = (TextView) itemView.findViewById(R.id.messengerTextView);
-//            messengerImageView = (CircleImageView) itemView.findViewById(R.id.messengerImageView);
-//        }
-//    }
-//
-//    public FirebaseRecyclerAdapter getFirebaseAdapter(final Activity activity,
-//                                                      MessageUtil.MessageLoadListener listener,
-//                                                      final LinearLayoutManager linearManager,
-//                                                      final RecyclerView recyclerView) {
-//        sAdapterListenerSearch = listener;
-//        final FirebaseRecyclerAdapter adapter =
-//                new FirebaseRecyclerAdapter<ChatMessage, RetrievedMessageViewHolder>(
-//                        ChatMessage.class,
-//                        R.layout.item_message,
-//                        RetrievedMessageViewHolder.class,
-//                        mFirebaseDatabaseReference.child(MESSAGES_CHILD)) {
-//                    @Override
-//                    protected void populateViewHolder(final RetrievedMessageViewHolder viewHolder,
-//                                                      final ChatMessage chatMessage, int position) {
-//                        sAdapterListenerSearch.onLoadComplete();
-//                        viewHolder.messageTextView.setText(chatMessage.getText());
-//                        viewHolder.messengerTextView.setText(chatMessage.getName());
-//
-//                        SimpleTarget target = new SimpleTarget<Bitmap>() {
-//                            @Override
-//                            public void onResourceReady(Bitmap bitmap, GlideAnimation glideAnimation) {
-//                                viewHolder.messengerImageView.setImageBitmap(bitmap);
-//                            }
-//                        };
-//                        Glide.with(activity)
-//                                .load(chatMessage.getPhotoUrl())
-//                                .asBitmap()
-//                                .into(target);
-//
-//                    }
-//                };
-//
-//        return adapter;
-//    }
+    public class SearchMessageAdapter extends BaseAdapter {
 
+        private ArrayList<ChatMessage> messageList;
+        private Context mContext;
+
+        public SearchMessageAdapter(ArrayList<ChatMessage> messageList, Context mContext) {
+            this.messageList = messageList;
+            this.mContext = mContext;
+        }
+
+        @Override
+        public int getCount() {
+            return messageList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = LayoutInflater.from(mContext).inflate(R.layout.item_message, parent, false);
+
+            TextView messageTextView = (TextView) convertView.findViewById(R.id.messageTextView);
+            TextView messengerTextView = (TextView) convertView.findViewById(R.id.messengerTextView);
+            final ImageView messengerImageView = (CircleImageView) convertView.findViewById(R.id.messengerImageView);
+
+            messageTextView.setText(messageList.get(position).getText());
+            messengerTextView.setText(messageList.get(position).getName());
+
+            SimpleTarget target = new SimpleTarget<Bitmap>() {
+                @Override
+                public void onResourceReady(Bitmap bitmap, GlideAnimation glideAnimation) {
+                    messengerImageView.setImageBitmap(bitmap);
+                }
+            };
+            Glide.with(SearchMessageActivity.this)
+                    .load(messageList.get(position).getPhotoUrl())
+                    .asBitmap()
+                    .into(target);
+
+            return convertView;
+        }
+    }
 
 }
 
