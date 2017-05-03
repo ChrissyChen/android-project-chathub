@@ -74,7 +74,6 @@ public class SignInActivity extends AppCompatActivity implements
                 .build();
 
         // Initialize FirebaseAuth
-        //Initialize Auth
         mAuth = FirebaseAuth.getInstance();
 
     }
@@ -136,7 +135,6 @@ public class SignInActivity extends AppCompatActivity implements
                             startActivity(new Intent(SignInActivity.this, MainActivity.class));
                             finish();
                         }
-
                     }
                 });
     }

@@ -15,6 +15,8 @@
  */
 package edu.sfsu.csc780.chathub.model;
 
+import java.util.Map;
+
 public class ChatMessage {
 
     private String text;
@@ -40,6 +42,10 @@ public class ChatMessage {
     public ChatMessage(String text, String name, String photoUrl, String imageUrl, String audioUrl) {
         this(text, name, photoUrl, imageUrl);
         this.audioUrl = audioUrl;
+    }
+
+    public ChatMessage(Map<String, String> map) {
+        this(map.get("text"), map.get("name"), map.get("photoUrl"));
     }
 
     public String getText() {

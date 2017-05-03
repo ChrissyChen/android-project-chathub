@@ -16,17 +16,12 @@
 package edu.sfsu.csc780.chathub.ui;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -60,10 +55,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 import edu.sfsu.csc780.chathub.AudioUtil;
 import edu.sfsu.csc780.chathub.CameraUtil;
 import edu.sfsu.csc780.chathub.ImageUtil;
@@ -72,7 +63,6 @@ import edu.sfsu.csc780.chathub.MapLoader;
 import edu.sfsu.csc780.chathub.MessageUtil;
 import edu.sfsu.csc780.chathub.R;
 import edu.sfsu.csc780.chathub.model.ChatMessage;
-import edu.sfsu.csc780.chathub.ui.SignInActivity;
 
 import static edu.sfsu.csc780.chathub.ImageUtil.saveImageToAlbum;
 import static edu.sfsu.csc780.chathub.ImageUtil.savePhotoImage;
@@ -82,11 +72,10 @@ public class MainActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener, MessageUtil.MessageLoadListener {
 
     private static final String TAG = "MainActivity";
-    public static final int MSG_LENGTH_LIMIT = 10;
+    public static final int MSG_LENGTH_LIMIT = 20;
     public static final String ANONYMOUS = "anonymous";
     private static final int REQUEST_PICK_IMAGE = 1;
     private static final int REQUEST_TAKE_PHOTO = 2;
-    private static final int REQUEST_RECORD_AUDIO = 3;
     private static final int LOCATION_PERMISSION = LocationUtils.REQUEST_CODE;
     private static final int CAMERA_PERMISSION = CameraUtil.REQUEST_CODE;
     private static final int AUDIO_PERMISSION = AudioUtil.REQUEST_CODE;
@@ -204,12 +193,7 @@ public class MainActivity extends AppCompatActivity
         mLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //LocationUtils.checkLocationPermission(MainActivity.this);
-                //Log.d(TAG, "onClick checkLocationPermission!!!!!!!!!!!!!!!!");
-//                LocationUtils.startLocationUpdates(MainActivity.this);
-//                Log.d(TAG, "onClick startLocationUpdates!!!!!!!!!!!!!!!!");
                 loadMap();
-
             }
         });
 
@@ -260,7 +244,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -271,6 +255,10 @@ public class MainActivity extends AppCompatActivity
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 mUsername = ANONYMOUS;
                 startActivity(new Intent(this, SignInActivity.class));
+                return true;
+
+            case R.id.search_message_menu:
+                startActivity(new Intent(this, SearchMessageActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -351,12 +339,6 @@ public class MainActivity extends AppCompatActivity
                 if (isGranted) {
                     LocationUtils.startLocationUpdates(this);
                     Log.d(TAG, "onRequestPermissionsResult startLocationUpdates!!!!!!!!!!!!!!!!");
-//                    loadMap();
-//                    Log.d(TAG, "onRequestPermissionsResult loadMap +++++++++++++++");
-                } else {
-//                    mLocationButton.setEnabled(false);
-//                    Log.d(TAG, "onRequestPermissionsResult disenable the location button +++++++++++++++");
-//                    mLocationButton.setAlpha((float) 0.5);
                 }
                 break;
             }
@@ -375,7 +357,6 @@ public class MainActivity extends AppCompatActivity
 
             case AUDIO_PERMISSION: {
                 if (isGranted) {
-                    //AudioUtil.recordVoice(MainActivity.this, mVoiceButton);
                     AudioUtil.recordVoice(MainActivity.this, mVoiceButton);
                     Log.d(TAG, "onRequestPermissionsResult recordVoice ___________________");
                 } else {
@@ -430,6 +411,7 @@ public class MainActivity extends AppCompatActivity
 
     private void uploadImageMessage(Uri uri) {
         if (uri == null) Log.e(TAG, "Could not create image message with null uri");
+        Log.d(TAG, "image uri: " + uri);
 
         final StorageReference imageReference = MessageUtil.getStorageReference(mUser, uri);
         UploadTask uploadTask = imageReference.putFile(uri);
@@ -449,11 +431,11 @@ public class MainActivity extends AppCompatActivity
                 MessageUtil.send(chatMessage);
                 mMessageEditText.setText("");
                 Log.d(TAG, "successfully upload image message to firebase");
-                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
-                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
-                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
-                Log.d(TAG, "user: " + chatMessage.getName());
-                Log.d(TAG, "text: " + chatMessage.getText());
+//                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
+//                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
+//                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
+//                Log.d(TAG, "user: " + chatMessage.getName());
+//                Log.d(TAG, "text: " + chatMessage.getText());
             }
         });
     }
@@ -479,11 +461,11 @@ public class MainActivity extends AppCompatActivity
                 MessageUtil.send(chatMessage);
                 mMessageEditText.setText("");
                 Log.d(TAG, "successfully upload audio message to firebase");
-                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
-                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
-                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
-                Log.d(TAG, "user: " + chatMessage.getName());
-                Log.d(TAG, "text: " + chatMessage.getText());
+//                Log.d(TAG, "audio url: " + chatMessage.getAudioUrl());
+//                Log.d(TAG, "image url: " + chatMessage.getImageUrl());
+//                Log.d(TAG, "photo url: " + chatMessage.getPhotoUrl());
+//                Log.d(TAG, "user: " + chatMessage.getName());
+//                Log.d(TAG, "text: " + chatMessage.getText());
             }
         });
     }

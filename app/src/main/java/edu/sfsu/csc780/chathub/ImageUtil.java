@@ -70,8 +70,6 @@ public class ImageUtil {
         String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         String imageFileNamePrefix = IMAGE_FILE_NAME_PREFIX + timeStamp;
         File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-//        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-//        Log.d(TAG, "file://" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString());
 
         imageFile = File.createTempFile(
                 imageFileNamePrefix,    /* prefix */
@@ -92,7 +90,6 @@ public class ImageUtil {
     }
 
     public static void saveImageToAlbum(Context context) {
-
         // insert image file to album
         try {
             MediaStore.Images.Media.insertImage(context.getContentResolver(),
@@ -101,10 +98,6 @@ public class ImageUtil {
             e.printStackTrace();
             Log.d(TAG, "Image file cannot found in saveImageToAlbum().");
         }
-
-//        Log.d(TAG, "file://" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString());
-//        Log.d(TAG, "file://" + context.getExternalFilesDir(Environment.DIRECTORY_DCIM).toString());
-//        Log.d(TAG, "file://" + context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString());
 
         //broadcast the updates to the album
         context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString())));

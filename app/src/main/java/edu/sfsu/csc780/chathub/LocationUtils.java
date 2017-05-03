@@ -10,8 +10,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
-import edu.sfsu.csc780.chathub.ui.MainActivity;
-
 /**
  * Created by Xinlu Chen on 4/2/17.
  */
@@ -71,9 +69,6 @@ public class LocationUtils {
             Log.d(LOG_TAG, "requesting updates");
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME,
                     MIN_DISTANCE, sLocationListener);
-
-//            MainActivity mMainActivity = (MainActivity)activity;
-//            mMainActivity.loadMap();
         }
     }
 
