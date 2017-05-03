@@ -42,7 +42,6 @@ public class MainActivityEspressoTest {
     public ActivityTestRule<MainActivity> mActivityRule =
             new ActivityTestRule<>(MainActivity.class);
 
-    // Add instrumentation test here
     @Test
     public void ensureMessageFieldClearsAfterSend() {
         // Use a ViewMatcher withId() to get the correct view and use a ViewAction typeText()

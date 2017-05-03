@@ -98,10 +98,9 @@ public class ImageUtil {
             e.printStackTrace();
             Log.d(TAG, "Image file cannot found in saveImageToAlbum().");
         }
-
         //broadcast the updates to the album
         context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString())));
         context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + context.getExternalFilesDir(Environment.DIRECTORY_DCIM).toString())));
-
     }
+
 }
