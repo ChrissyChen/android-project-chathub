@@ -31,6 +31,7 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isClickable;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -53,4 +54,6 @@ public class MainActivityEspressoTest {
          //Again use withId() matcher, but now use ViewAssertion matches() to verify state of view
          onView(withId(R.id.messageEditText)).check(matches(withText("")));
         }
+
+
 }

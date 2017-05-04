@@ -1,25 +1,17 @@
 package edu.sfsu.csc780.chathub;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.util.Log;
 
-import junit.framework.Assert;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
@@ -27,12 +19,12 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by cjkriese on 3/12/17.
+ * Created by Xinlu Chen on 3/12/17.
  */
 
-public class ExampleInstrumentedTest {
+public class ImageUtilInstrumentedTest {
 
-    private static final String TAG = ExampleInstrumentedTest.class.getSimpleName();
+    private static final String TAG = ImageUtilInstrumentedTest.class.getSimpleName();
     private static final int LARGE_DRAWABLE = R.drawable.android_bigbox;
     private static final int SMALL_DRAWABLE = R.drawable.android_smallbox;
 
@@ -65,7 +57,6 @@ public class ExampleInstrumentedTest {
         assertNotEquals(bitmap, resizedBitmap);
         assertTrue((resizedBitmap.getHeight() + resizedBitmap.getWidth()) <= ImageUtil.MAX_LINEAR_DIMENSION);
     }
-
 
     @Test
     public void scaleBitmap_verifySmall() throws Exception {
